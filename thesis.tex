@@ -52,36 +52,40 @@ It has been previously established that mRNAs exhibit a distinct pattern of two 
 We set out to explore whether the same pattern held in microRNAs.
 We used RNA-Seq data from The Cancer Genome Atlas to examine the overall profile of microRNA expression data and fit kernel density estimates.
 Our results indicate that microRNA expression does fit into two
-distributions, but that the characteristics of these distribtions are quite different from those of messenger RNAs. These distributions  seem to have differing abilities
+distributions, but that the characteristics of these distributions are quite different from those of messenger RNAs. These distributions  seem to have differing abilities
 to distinguish tumors within and across cancer types. These trends are consistent across the entirety of the TCGA datasets in our analysis.
 
 \section*{Background}
-It has been shown that the expression levels of messenger RNAs cluster into two distinct, roughly lognormal distributions (Hebenstreit \textit{et al} 2011).
-Experimental data supported the notion that one of these distributions
-represents essential, highly-transcribed genes and the other lowly transcribed genes which are only active during development. Knowing the two distributions of messenger RNA
-expression levels makes it much simpler to describe when a transcript is being expressed aberrantly.
-This knowledge is valuable in the laboratory and the clinic.
-Currently this sort of analysis has only been done for mRNA. We sought to examine whether a similar pattern of expression might hold for microRNAs.
+MicroRNAs are a family small non-coding RNA molecules. First discovered in \emph{C. elegans} 
+by Victor Ambros, they are conserved across nearly all metazoan species ().
+Mature microRNAs are 20-22bp in size and bind to messenger RNAs through partial 
+Watson-Crick base pairing in the 3' untranslated region. While canonically thought of as post-transcriptional 
+repressors of messenger RNA activity, in recent years several studies have found 
+that microRNAs occasionally act as translational activators().
 
-microRNAs are small (20-22 nucleotides long) endogenous RNA molecules that have been shown to function in transcriptional and translational repression of messenger RNAs ().
-First discovered in C. Elegans, microRNAs are present and relatively conserved across many metazoan species including humans. microRNAs function at many timepoints in the cell lifecycle
-and over the life of the organism. Several have been shown to be essential to embryonic development (). Overall expression profiles of microRNAs are also highly-specific to certain cell types (Guar \textit{et al} 2007).
+In humans, the number of microRNAs and predicted targets has expanded greatly since their discovery.
+ The total number of verified microRNAs in humans  stretches well into the 
+ hundreds (), with predictions for many more (). As a single microRNA can target 
+ many messenger RNAs, the total number of microRNA targets is significantly 
+ larger than the number of microRNAs. The number of messenger RNAs targeted by 
+ microRNAs in humans may constitute more than a third of all known protein coding genes (Wang \emph{et al} 2011).
+ 
+ 
+With so many targets, microRNAs are essential regulators to many cellular processes (). MicroRNAs have also
+been associated with many  
 
+MicroRNAs regulate a wide variety of genes in the metazoan cell. 
 
-Previous studies have also shown that microRNAs can define cancer subtypes and may help drive oncogenesis and metastasis (Garzon \textit{et al} 2006). Mutations in certain microRNAs are correlated with increased
-resistance to cancer treatment and may act as indicators of clinical outcome (Jamieson \textit{et al} 2011). We seek to accomplish several aims in this study:
-\begin{enumerate}
- \item To characterize the overall distribution of microRNA expression in the TCGA microRNA-Seq datasets.
- \item To determine whether microRNA expression fits into multiple subdistributions like mRNA expression.
- \item To examine any trends in these subdistributions if they exist.
- \item To examine these distributions to see if they can be used to better distinguish tumors within and between cancer types.
-\end{enumerate}
+% TODO
+MicroRNA roles in cancer
 
+MicroRNA roles in clustering, cell type specificity
 
-Knowing the distribution of microRNA expression levels should improve our ability to ``call''
-microRNA expression variants. As researchers continue to integrate microRNA data into pan-cancer multi-omics analyses, it will become increasingly important to understand
-thresholds for calling expression variants. Our hope is that the research presented here will be useful to developers of multiple-omics models. We also hope that the knowledge
-obtained will help improve existing tumor clustering techniques.
+Hebenstreit and the mRNA distributions.
+
+Why two distributions of miRNA would matter
+
+Integration into multi-omic models
 
 \section*{Methods}
 \subsection*{Data Acquisition}
