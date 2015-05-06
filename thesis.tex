@@ -1,0 +1,664 @@
+\documentclass[12pt]{report}
+\usepackage[margin=1.0in,a4paper]{geometry}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{amsmath}
+%opening
+%\title{Human microRNAs Exhibit Two Distributions Within and Across Cancer Samples}
+%\author{Eric T Dawson}
+\singlespace
+
+
+\begin{document}
+\begin{titlepage}
+\begin{center}
+% \maketitle
+ \includegraphics[scale=.2]{/Users/eric/Dropbox/thesis/UTseal.png}
+ \vfill
+ \Huge \textbf{Human microRNAs exhibit two distributions of expression within and across cancer samples}
+ \vfill
+\noindent
+\begin{minipage}[t]{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Author:}\\
+Eric Thomas Dawson
+\end{flushleft}
+\end{minipage}%
+\begin{minipage}[t]{0.4\textwidth}
+\begin{flushright} \large
+\emph{Supervisor:} \\
+Dr.~Claus O. Wilke
+\end{flushright}
+\end{minipage}
+\vfill
+\large May 08, 2015
+
+\large \textit{For completion of the Dean's Scholars Honors Program}
+\end{center}
+\vfill
+
+\vfill
+
+\end{titlepage}
+
+
+
+
+
+\section*{Abstract}
+It has been previously established that mRNAs exhibit a distinct pattern of two overlapping distributions in expression (Hebenstreit \textit{et al} 2011).
+We set out to explore whether the same pattern held in microRNAs.
+We used RNA-Seq data from The Cancer Genome Atlas to examine the overall profile of microRNA expression data and fit kernel density estimates.
+Our results indicate that microRNA expression does fit into two
+distributions, but that the characteristics of these distribtions are quite different from those of messenger RNAs. These distributions  seem to have differing abilities
+to distinguish tumors within and across cancer types. These trends are consistent across the entirety of the TCGA datasets in our analysis.
+
+\section*{Background}
+It has been shown that the expression levels of messenger RNAs cluster into two distinct, roughly lognormal distributions (Hebenstreit \textit{et al} 2011).
+Experimental data supported the notion that one of these distributions
+represents essential, highly-transcribed genes and the other lowly transcribed genes which are only active during development. Knowing the two distributions of messenger RNA
+expression levels makes it much simpler to describe when a transcript is being expressed aberrantly.
+This knowledge is valuable in the laboratory and the clinic.
+Currently this sort of analysis has only been done for mRNA. We sought to examine whether a similar pattern of expression might hold for microRNAs.
+
+microRNAs are small (20-22 nucleotides long) endogenous RNA molecules that have been shown to function in transcriptional and translational repression of messenger RNAs ().
+First discovered in C. Elegans, microRNAs are present and relatively conserved across many metazoan species including humans. microRNAs function at many timepoints in the cell lifecycle
+and over the life of the organism. Several have been shown to be essential to embryonic development (). Overall expression profiles of microRNAs are also highly-specific to certain cell types (Guar \textit{et al} 2007).
+
+
+Previous studies have also shown that microRNAs can define cancer subtypes and may help drive oncogenesis and metastasis (Garzon \textit{et al} 2006). Mutations in certain microRNAs are correlated with increased
+resistance to cancer treatment and may act as indicators of clinical outcome (Jamieson \textit{et al} 2011). We seek to accomplish several aims in this study:
+\begin{enumerate}
+ \item To characterize the overall distribution of microRNA expression in the TCGA microRNA-Seq datasets.
+ \item To determine whether microRNA expression fits into multiple subdistributions like mRNA expression.
+ \item To examine any trends in these subdistributions if they exist.
+ \item To examine these distributions to see if they can be used to better distinguish tumors within and between cancer types.
+\end{enumerate}
+
+
+Knowing the distribution of microRNA expression levels should improve our ability to ``call''
+microRNA expression variants. As researchers continue to integrate microRNA data into pan-cancer multi-omics analyses, it will become increasingly important to understand
+thresholds for calling expression variants. Our hope is that the research presented here will be useful to developers of multiple-omics models. We also hope that the knowledge
+obtained will help improve existing tumor clustering techniques.
+
+\section*{Methods}
+\subsection*{Data Acquisition}
+mRNA-Seq and microRNA-Seq data from The Cancer Genome Atlas was downloaded via the Broad Firehose website.
+The June 14, 2014 release was used. Although we could have used later releases, we decided to freeze our data at this point. As no more
+TCGA data is being generated we feel this is a prudent choice to prevent fragmentation. Regardless, we are confident our results would hold
+even if a newer TCGA dataset was analyzed. Data files were prepared using the munge.py script in the accompanying Github repository. The script
+removes the MIMAT identifier and any duplicate microRNA entries. It also renames the TCGA identifiers to their fifteen character IDs to help
+simplify identification. Non-tumor samples were then removed for each dataset in the main R analysis script. As LAML is a blood-borne cancer and samples were all from blood,
+no samples were removed from that dataset.
+
+
+
+%To analyze normal data, raw reads from experiment ////////// were obtained from the NCBI Short Read Archive. The reads were analyzed with FASTQC () to find
+%overrepresented sequences which we assumed to be read adapters. We then trimmed these adapters using Flexbar (). Custom parameters were used
+%??????/////// Chat about parameters
+%All scripts are available from the Github repository.
+
+
+%\subsection*{Normal Data Preprocessing}
+%Reads from the Short Read Archive were examined using FASTQC (). All samples passed the basic filters in FASTQC for nucleotide content, GC bias, etc.
+%Overrepresented sequences were assumed
+%to be adapters even though none were listed in the SRA page. These adapters were trimmed from the sequences
+%using Flexbar (). The default settings were used unless otherwise specified.
+
+%\subsection*{RNA-Seq Analysis of Normal Data}
+%Normal data was aligned to the hg19 reference using bowtie2 ().
+%A bowtie2 compatible index was first built from the GRCh38/hg19 human reference genome.
+% Parameters for running can
+%be found in the included scripts in the Github repository. Overall, only the number of threads used for analysis was changed from the default parameters.
+%Transcript counts were then taken using HTSEQ-count (). Finally, RPKM values were calculated using a custom Python script, available via the accompanying Github
+%repository. Transcript lengths were obtained using the Ensembl gene annotation track from the UCSC genome browser. For miRNA, the gff file was obtained from miRBase.
+%For messenger RNA the Ensembl track from the UCSC genome browser was used.
+
+\subsection*{Exploratory Data Analysis}
+All exploratory analysis was performed in the R statistical framework using the tidyr, dplyr, ggplot2 and cowplot packages.
+All R scripts are available from the accompanying Github repository. Histograms were generated using the ggplot2
+package. We chose not to replace missing data with an arbitrary RPKM value, as this could greatly influence results. This is likely the primary criticism we
+would have with the Hebenstreit paper. Especially when fitting KDEs, the substitution of missing values with very low RPKM values can greatly
+alter the overall distribution obtained. We chose to simply exclude these from analysis to prevent bias.
+%//// This needs to be built up.
+
+
+\subsection*{Histograms and KDE Fitting}
+Histogram fitting was done with the ggplot2 package. Binsize was determined automatically using the qplot function. Each histogram had its Y axis limits scaled for easier viewing.
+X axis limits were standardized on the interval from -5 to 20 $log_{2}(RPKM)$.
+
+
+Kernel density estimates were fit using the geom\_density function found in the ggplot2 R package. This function is based on the standard R density function.
+Default parameters were used. When necessary, NA values were removed.
+
+\subsection*{Distribution Fitting}
+ To determine some of the underlying properties of the observed distributions we attempted to fit normal and skew normal distributions to the data using the R packages MASS () and SN(). MASS uses
+ a maximum-likelihood estimation approach to fit the parameters of a given distribution. We chose to fit normal and skew-normal distributions given the characteristics of
+ microRNA expression distributions in log space. Because values could be negative, gamma and Weibull were not good options. To determine if LE and HE distributions were truly different we performed
+ Kolmogorov-Smirnov (KS) tests between the two distributions. We also used KS tests to compare the results of fitting with the original distributions. As analysis of pan-cancer samples was time-consuming
+ we chose to focus on BRCA for this analysis.
+
+\subsection*{Hierarchical Clustering}
+Hierarchical clustering was performed using the base R function hclust. Distances were calculated using the dist function with the default parameters. The results were visualized using
+the R package sparcl ().
+
+\section*{Results}
+\subsection*{Exploratory Analysis Indicates Two Distributions of microRNA Expression Conserved Across Cancer Types}
+To assess whether microRNA expression exhibited two distributions we first generated a histogram of overall microRNA expression
+for microRNASeq from the TCGA BRCA data set. By observation, it seemed plausible that the overall distribution might be composed of two contributing distributions.
+We decided to separate microRNAs into distributions based upon whether or not there were any samples that did not have an RPKM value for that microRNA.
+This is similar to the criterion used in the Hebenstreit study. Although seemingly arbitrary, we thought this method of defining distributions should
+provide several addional benefits that we will discuss later. %TODO
+
+\begin{figure}[H]
+\centering
+ \includegraphics[scale=0.5]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/BRCA_tri_plot.png}
+ \caption{Histogram of overall microRNA expression, expression of microRNAs not expressed in at least one sample, and expression of microRNAs present in every sample for data from
+ the TCGA breast invasive carcinoma dataset.}
+\end{figure}
+
+  Histograms of the overall distribution and the full (HE) / partially-missing (LE) gene subsets seem to again support the notion that microRNA expression
+can be broken into two distributions based on our chosen criterion. We chose to apply this approach to other cancer types and found that this observation
+holds across cancer types from the TCGA data (see Figure \ref{fig::all_tri_plots}).
+
+\begin{figure}[h]
+ \centering
+ \subfigure[ACC]
+ {
+ \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/ACC_tri_plot.png}
+ }
+ \subfigure[BLCA]
+ {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/BLCA_tri_plot.png}
+ }
+ \subfigure[BRCA]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/BRCA_tri_plot.png}
+  }
+  \\
+ \subfigure[CESC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/CESC_tri_plot.png}
+ }
+ \subfigure[COAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/COAD_tri_plot.png}
+ }
+ \subfigure[COADREAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/COADREAD_tri_plot.png}
+ }
+ \\
+ \subfigure[DLBC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/DLBC_tri_plot.png}
+ }
+ \subfigure[ESCA]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/ESCA_tri_plot.png}
+ }
+ \subfigure[HNSC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/HNSC_tri_plot.png}
+ }
+ \\
+ \subfigure[KICH]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/KICH_tri_plot.png}
+ }
+ \subfigure[KIRC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/KIRC_tri_plot.png}
+ }
+ \subfigure[LAML]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/LAML_tri_plot.png}
+ }
+ \\
+ \subfigure[PAAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/PAAD_tri_plot.png}
+ }
+ \subfigure[PRAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/tri_plots/PRAD_tri_plot.png}
+ }
+ \caption{Histograms of overall microRNA expression, expression of microRNAs that are not expressed in at least one sample, and expression of microRNAs expressed in all samples for
+ each cancer type from The Cancer Genome Atlas which had an microRNA-Seq dataset.}
+ \label{fig::all_tri_plots}
+\end{figure}
+
+
+%Given that this phenomenon occured in tumor samples we hypothesized that it was also occuring in cells with normal morphology. We examined normal breast cell samples from the
+%NCBI Short Read Archive to determine if we saw a similar trend. After aligning the reads and calculating RPKM values, we found that
+%NORMAL CELL DATA WOULD GO HERE
+
+  There are several arguments for separating microRNAs based on whether they are present in all samples or not. As we will discuss later, in the samples we analyzed it is extremely rare
+  for a microRNA missing in one sample to have an expression level above 5 $log_{2} \text{RPKM}$. We argue that classifying microRNAs by whether they are missing in any sample or if there expression
+  is below 4-5 $log_{2} \text{RPKM}$ are approximately equivalent approaches. Furthermore, we believe examination of $log_{2} \text{RPKM}$ data is more informative than raw RPKM levels in the context
+  of this study. RPKM is useful for looking at relative expression levels within a sample (). RPKM is also thought to be a decent indicator of RNA abundance, with 1-3 RPKM corresponding to one transcript
+  per cell (Mortazavi \textit{et al} 2008), although this notion is hotly contended (see Wagner, Kin, and Lynch 2012). Nonetheless, several studies corroborate that an RPKM value of zero
+  means no transcripts for the given RNA are present in the sample (Hebenstreit \textit{et al} 2011,Mortazavi \textit{et al} 2008, and others). Therefore, microRNAs that are detected in some samples but not
+  in others should actually have different transcript counts per cell for the microRNA. We also propose that the microRNAs that are always present in every sample may also represent a core group of essential
+  microRNAs and that deletion of one of these is fatal to a cell lineage. As discussed later, this is only one of several possible explanations for this observation, and the experimental work necessary
+  to verify this result is outside the scope of this study. %TODO
+  
+  
+  Hebenstreit \textit{et al} used PCR amplification to determine the detection limit of their mRNASeq setup and found that
+  genes with values as low as -5 $log_{2} \text{RPKM}$ could still be detected. These genes mapped to their LE (low-expression) peak. Given this knowledge, we feel comfortable assuming that any microRNA expression that was detected
+  was not from experimental noise. As we did not have access to biological samples we could not verify this experimentally.
+  
+  Of course, the criterion of missing values is exceedingly sensitive to sample size. If sample size is small, chance may dictate whether a given microRNA will be missing from any sample. This disrupts one's ability
+  to classify microRNAs. At a sample size of one this ability is completely lost. However, datasets from The Cancer Genome Atlas tend to be large in size ($n > 50$). For BRCA, there are over 1000 samples. Given these
+  large sample sizes we believe it is appropriate to continue using this metric. Other methods could also be used, such as a minimum RPKM cutoff or maximum-likelihood determination of distributions. Missing values
+  do provide a very useful, convenient method of separating microRNAs into discrete distributions. %TODO
+  
+  %TODO
+
+
+\subsection*{KDE Fitting Exposes Substantial Variation in microRNA Expression Distributions}
+We next sought to find out how mRNA expression distributions in TCGA data compared to the distributions observed by Hebensteit \textit{et al} in murine Th2 cells. We first fit kernel density estimates (KDEs) to 
+mRNA data to see if the patterns described in the Hebenstreit study were present in cancer data. We generated an overall KDE for the combined mRNA dataset to show
+that the overall expression distribution was very similar to that observed in the Hebenstreit study.
+
+%TODO overall KDE for mRNA
+\begin{figure}[H]
+\centering
+ \includegraphics[width=4in]{/Users/eric/Dropbox/thesis/final_plots/BRCA_mRNA_Overall_KDE.png}
+ \caption{Kernel density estimate of overall messenger RNA expression distribution in BRCA.}
+ \label{fig::brca_mrna_overall_kde}
+\end{figure}
+
+We verified that the the majority of mRNAs are expressed at high levels in accordance with the Hebenstreit study.  We present their results here for comparison.
+
+\begin{figure}[H]
+\centering
+ \includegraphics[width=3.5in]{/Users/eric/Dropbox/thesis/final_plots/heb_kdes.png}
+ \caption{Figure one reprinted from Hebenstreit \textit{et al } 2011.}
+ \label{fig::brca_mrna_and_heb}
+\end{figure}
+
+We then fit KDEs to individual mRNAs and generated a composite plot of overlayed KDEs. If mRNAs were truly drawn from two distributions, one would expect that these
+KDEs would stack over one another, and the underlying distributions could be seen when examining the stacked density estimates. We found that this largely held true for mRNAs.
+As can be seen in figure \ref{fig::brca_mrna_kde}, there are major peaks at 0, 1, and 12 $log_{2} \text{RPKM}$. Hebenstreit \textit{et al} found that major peaks occurred at just above -5 
+for ``low-expression'' genes and 5 $log_{2} \text{RPKM}$ for ``high-expression'' genes. We chose not to pursue exploring this phenomenon, although we believe the shifts in their curves
+are from their decision to replace missing $log_{2} \text{RPKM}$ values with low $log_{2} \text{RPKM}$ values. We did not to replace missing values in our data, instead opting to remove them
+and base summary statistics only on the values present. We believe this more accurately reflects the possible biological ground truth in cancer cells, where gene expression may vary
+significantly between samples. There was little support in the literature for either method. %TODO
+
+\begin{figure}[H]
+\centering
+ \includegraphics[width=4in]{/Users/eric/Dropbox/thesis/final_plots/kde_plots/BRCA_50_mRNA_density.png}
+ \caption{Composite KDE plot for BRCA mRNASeq data. Each KDE represents the fitted distribution of a single mRNA. There are distinct peaks at 0 and 1 $log_{2} \text{RPKM}$ and another peak around 12 $log_{2} \text{RPKM}$.}
+ \label{fig::brca_mrna_kde}
+\end{figure}
+
+
+
+Next we turned to performing the same analysis for microRNAs. We found that microRNAs exhibit an expression distribution pattern that falls in the same range as mRNAs (Figure \ref{fig::brca_mirna_kde}. However,
+the relative size of these distributions is opposite those described by Hebenstreit \textit{et al}. The majority of microRNAs are expressed at levels below 5 $log_{2} \text{RPKM}$ (hereafter LE), while a smaller subset are highly expressed
+between 15 and 20 $log_{2} \text{RPKM}$ (HE).
+
+\begin{figure}[H]
+\centering
+\subfigure[Overall distribuion of microRNA expression in BRCA.]{
+   \includegraphics[width=3in]{/Users/eric/Dropbox/thesis/final_plots/kde_plots/BRCA_overall_KDE.png}
+}
+\subfigure[MicroRNAs missing from some samples are plotted in red, while those present in all samples
+are in blue.]{
+   \includegraphics[width=3in]{/Users/eric/Dropbox/thesis/final_plots/BRCA_mirna_split.png}
+}
+\subfigure[Shaded KDEs for missing/no missing microRNAs and colored KDEs for genes with expression levels above 4 $log_{2} \text{RPKM}$]{
+  \includegraphics[width=3in]{/Users/eric/Dropbox/thesis/final_plots/kde_plots/BRCA_kde_HELE_4RPKM.png}
+}
+\subfigure[A composite KDE plot for BRCA data.]{
+  \includegraphics[width=3in]{/Users/eric/Dropbox/thesis/final_plots/kde_plots/miRNA_BRCA_all.png}
+}
+  \caption{BRCA Analysis. Pancancer analysis can be found in supplemental figures.}
+ \label{fig::brca_mirna_kde}
+\end{figure}
+%TODO Pancancer fits of LE/HE/RPKM limits
+
+
+Close examination of the composite KDE reveals that the two distributions of microRNA expression are less separate than those of mRNAs. While the KDEs do stack around 0 and 7 $log_{2} \text{RPKM}$, many KDEs fall
+elsewhere on the range of expression. Figure \ref{fig::brca_mirna_kde}d also shows the equivalency of the missing value criterion and an RPKM cutoff in distinguishing between the two distributions.
+%TODO explain this spread
+
+\subsection*{Characterizing MicroRNA Expression Distributions in BRCA}
+  We fit normal distributions to the overall, Le, and HE expression groups using the R package MASS. Our results are summarized in figure \ref{fig::fitted_tabular}.
+  
+  \begin{table}[H]
+  \centering
+   \caption{Parameter estimates for fitted normal distributions of BRCA microRNA expression using MASS.}
+   \begin{tabular}[]{| c | c | c |}
+   \hline
+    Distribution & Fitted Mean & Fitted SD\\
+    \hline 
+    Overall& 4.100 & 4.489\\
+    \hline
+    LE (missing samples present)& 1.053 & 2.228\\
+    \hline
+    HE (no missing samples) & 8.11373 & 3.441\\
+    \hline
+   \end{tabular}
+  
+   \label{fig::fitted_tabular}
+  \end{table}
+
+  We then tried pairwaise Kolmogorov-Smirnov (KS) tests to determine whether our fitted distributions were well-fit and whether our two LE and HE distributions were indeed different. All pairwise combinations of KS tests
+  indicated that (1) LE and HE microRNAs are drawn from different distributions and (2) fitted distributions were not well-fit to the actual data. Our prediction is that the data is not normally distributed. As negative
+  values are possible in log-space, gamma and Weibull are not good options even though their ability to replicate the shape of the distribution would likely be superior.
+
+%TODO write results here; SN analysis.
+
+\subsection*{MicroRNAs With Higher Expression Levels Show Less Variation in Expression}
+  We found that microRNAs with average expression levels above roughly 5 $log_{2} \text{RPKM}$ tend to be expressed in all samples. We first measured variation in expression
+  using the mean absolute deviation (MAD), a highly-robust measure of dispersion (). We plotted the MAD for a given gene in the dataset on its median to examine how much variation there was in
+  expression as expression levels increased. We colored the data points depending on if the corresponging microRNA was missing in any sample.
+  As would be expected the level of variability in expression increases with RPKM. The differences in median RPKM and median absolute deviation in RPKM spanned nearly five orders of magnitude. 
+  We then did the same with data that had been $log_{2}$ transformed
+  and found that microRNAs that were expressed at lower levels showed higher fold-change differences. In general, microRNAs that were present in all samples
+  tended to show much less variation than did microRNAs which were missing in at least one sample.
+  
+  \begin{figure}[H]
+   \centering
+    \subfigure[Plot of the median absolute deviation on median expression (in RPKM). Each point represents a single microRNA. Data is from the BRCA dataset.
+	Pan-cancer plots are shown in supplementary figures.]{
+	\includegraphics[width=4.5in]{/Users/eric/Dropbox/thesis/final_plots/mean_on_plots/BRCA_RPKM_median_on_MAD.png}
+	}
+
+    \subfigure[Zoomed plot of median absolute deviation on median expression to show microRNAs of low expression/deviation (in RPKM).]{
+       \includegraphics[width=3in]{/Users/eric/Dropbox/thesis/final_plots/mean_on_plots/BRCA_RPKM_madMed_zoomNoFilter.png}
+       }
+    \subfigure[Plot of median absolute deviation and median expression for log$_{2}$ transformed data. microRNAs expressed at low levels tend to show
+	greater fold-change differences in expression.]{
+      \centering
+       \includegraphics[width=3in]{/Users/eric/Dropbox/thesis/final_plots/BRCA_mad_on_median.png}
+}
+    \caption{A, B: Median absolute deviation (RPKM) increases directly with median RPKM. C: Fold-change variability increases with the number of samples missing a microRNA.}
+    \label{fig::mean_on_fig}
+  \end{figure}
+
+  There are several possible explanations for why certain microRNAs are never lost in pan-cancer samples. One is that such microRNAs are essential to cell
+  survival. Another is that the individual microRNA may be a causative hallmark of the cancer type in which it is detected. MicroRNAs may also tightly follow the
+  expression of their targets; any upregulation in a target gene may drive simultaneous upregulation of a targeting microRNA. Testing any of these theories would
+  require complex laboratory experiments that are outside the scope of this study.
+  
+  
+\subsection*{Seven $log_{2}$ RPKM Appears To Be The Lower Bound of Possibly Essential microRNA Expression in TCGA Data}
+  We scanned pan-cancer samples to see if we could detect any microRNAs with high average expression (above 4-5 $log_{2} \text{RPKM}$) that were lost in any samples. We found that 
+  above 7 $log_{2} \text{RPKM}$, it is extremely rare for a microRNA to be deleted. Across all analyzed cancer types, only 0-8 of more than 300 microRNAs were both highly-expressed and missing in at least one sample.
+  Refer to figures \ref{fig::all_L_plots} and \ref{fig::all_L_plots_zoom} for pancancer analysis.
+
+  \begin{table}[H]
+  \centering
+    \caption{MicroRNAs which had median expression levels greater than $log_{2}(RPKM)$ and were missing in at least one sample for various cancer types.}
+
+  \small
+   \begin{tabular}[]{| l | c |}
+   \hline
+    Cancer Type& microRNA\\
+    \hline 
+    ACC & \shortstack{
+    hsa-mir-377,
+    hsa-mir-411,
+    hsa-mir-485,\\
+    hsa-mir-487a,
+    hsa-mir-507,
+    hsa-mir-513c,\\
+    hsa-mir-655
+    }\\
+    \hline 
+BLCA & \shortstack{hsa-mir-187, hsa-mir-31, hsa-mir-934,\\ hsa-mir-944} \\
+\hline 
+BRCA & \shortstack{hsa-mir-136, hsa-mir-335, hsa-mir-429,\\ hsa-mir-96}\\
+\hline 
+COAD & hsa-mir-19a\\
+\hline 
+COADREAD & hsa-mir-19a\\
+\hline 
+CESC & \shortstack{hsa-mir-1247, hsa-mir-135b, hsa-mir-944}\\
+\hline 
+DLBC &\\
+ESCA & hsa-mir-944\\
+\hline 
+HNSC &\shortstack{ hsa-mir-1247, hsa-mir-196a-1, hsa-mir-206}\\
+\hline 
+KICH & \shortstack{hsa-mir-888, hsa-mir-891b, hsa-mir-892a}\\
+\hline 
+KIRC & \shortstack{hsa-mir-134, hsa-mir-181c, hsa-mir-193b,\\ hsa-mir-204}\\
+\hline 
+LAML& \shortstack {hsa-mir-125b-1, hsa-mir-127, hsa-mir-134,\\ hsa-mir-181d, hsa-mir-379, hsa-mir-501,\\ hsa-mir-542, hsa-mir-9-2}\\
+\hline 
+PAAD & hsa-mir-196b\\
+\hline 
+PRAD & hsa-mir-205\\
+\hline
+   \end{tabular}
+  \end{table}
+
+We chose to analyze the four microRNAs from this group in BRCA using Ingenuity Target Explorer (QIAGEN, https://targetexplorer.ingenuity.com/). hsa-miR-136 was associated
+with HER2 negative breast cancer. hsa-miR-335 regulates cisplatin and paclitaxel and is associated with lung metastasis; it has
+roles in differentiation, proliferation, and invasion. hsa-miR-429 is associated with several diverse cancers. Finally,
+hsa-miR-96 has a role in development and is associated with colorectal, pancreatic and prostate cancers. We predict there is likely some oncogenic activity from these microRNAs in the
+TCGA dataset given these findings.
+
+
+  
+  \begin{figure}[H]
+ \centering
+ \subfigure[ACC]
+ {
+ \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/ACC.png}
+ }
+ \subfigure[BLCA]
+ {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/BLCA.png}
+ }
+ \subfigure[BRCA]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/BRCA.png}
+  }
+  \\
+ \subfigure[CESC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/CESC.png}
+ }
+ \subfigure[COAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/COAD.png}
+ }
+ \subfigure[COADREAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/COADREAD.png}
+ }
+ \\
+ \subfigure[DLBC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/DLBC.png}
+ }
+ \subfigure[ESCA]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/ESCA.png}
+ }
+ \subfigure[HNSC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/HNSC.png}
+ }
+ \\
+ \subfigure[KICH]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/KICH.png}
+ }
+ \subfigure[KIRC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/KIRC.png}
+ }
+ \subfigure[LAML]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/LAML.png}
+ }
+ \\
+ \subfigure[PAAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/PAAD.png}
+ }
+ \subfigure[PRAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/PRAD.png}
+ }
+ \caption{Plots showing the number of samples missing a microRNA as related to the median $log_{2} \text{RPKM}$. In general, microRNAs that are highly expressed appear in almost every sample.}
+ \label{fig::all_L_plots}
+\end{figure}
+  
+  
+  \begin{figure}[H]
+ \centering
+ \subfigure[ACC]
+ {
+ \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/ACC_zoom.png}
+ }
+ \subfigure[BLCA]
+ {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/BLCA_zoom.png}
+ }
+ \subfigure[BRCA]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/BRCA_zoom.png}
+  }
+  \\
+ \subfigure[CESC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/CESC_zoom.png}
+ }
+ \subfigure[COAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/COAD_zoom.png}
+ }
+ \subfigure[COADREAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/COADREAD_zoom.png}
+ }
+ \\
+ \subfigure[DLBC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/DLBC_zoom.png}
+ }
+ \subfigure[ESCA]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/ESCA_zoom.png}
+ }
+ \subfigure[HNSC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/HNSC_zoom.png}
+ }
+ \\
+ \subfigure[KICH]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/KICH_zoom.png}
+ }
+ \subfigure[KIRC]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/KIRC_zoom.png}
+ }
+ \subfigure[LAML]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/LAML_zoom.png}
+ }
+ \\
+ \subfigure[PAAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/PAAD_zoom.png}
+ }
+ \subfigure[PRAD]
+  {
+  \includegraphics[width=1.75in]{/Users/eric/Dropbox/thesis/final_plots/l_plots/PRAD_zoom.png}
+ }
+ \caption{Plots showing the number of samples missing a microRNA as related to the median $log_{2} \text{RPKM}$, scaled to show only the microRNAs missing in fewer than ten samples.
+ In general, microRNAs that are highly expressed appear in almost every sample.}
+ \label{fig::all_L_plots_zoom}
+\end{figure}  
+  
+\subsection*{Tumors Differ More in Highly-Expressed Than Lowly-Expressed microRNAs}
+
+To assess if one distribution of microRNAs might be more useful in clustering tumor samples we performed a series of unsupervised hierarchical clusterings. We clustered
+tumors by their overall microRNA expression, the expression of their LE genes, and the expression of their HE genes as defined by the missing sample criterion (figure \ref{fig::dendros}).
+
+\begin{figure}[H]
+  \centering
+  \subfigure[Hierarchical clustering dendrogram for overall microRNA expression]{
+   \includegraphics[width=3.5in]{/Users/eric/Dropbox/thesis/final_plots/dendros/dendro_all.png}
+  }
+  \subfigure[Hierarchical clustering dendrogram for LE microRNA expression]{
+   \includegraphics[width=3.5in]{/Users/eric/Dropbox/thesis/final_plots/dendros/dendro_le.png}
+  }
+  \subfigure[Hierarchical clustering dendrogram for HE microRNA expression]{
+   \includegraphics[width=3.5in]{/Users/eric/Dropbox/thesis/final_plots/dendros/dendro_HE.png}
+  }
+  \caption{Pancancer dendrograms of microRNA expression distributions.}
+ \label{fig::dendros}
+\end{figure}
+
+This analysis clearly showed that HE microRNA expression provided the cleanest clustering result. LE genes showed very little separation among samples; this may have been because each
+cancer type had too many in common or expression within each cancer type may have been too divergent to distinguish cancer of one type from another. It is known that clustering of cancer
+samples by a variety of methods tends to recover the cell type of the tissue of origin (Gaur \textit{et all} 2007). This information is often of negligible use in the clinic.
+
+%TODO Finish describing this. Try to analyze why HE gives better separation. Try to get even better separation.s
+
+%\subsection*{GO Analysis}
+
+%\subsection*{Comparing Normal and Tumor miRNA Expression}
+
+
+\section*{Discussion}
+  This analysis demonstrated that microRNA expression in data from The Cancer Genome Atlas can be characterized by two non-normal distributions. These distributions have similar characteristics but
+  different frequencies compared to those described by Hebensteit \textit{et al} in their 2011 study of murine Th2 cells. They also have differing abilities to separate tumors by hierarchical clustering.
+  These distributions are conserved across tumor varieties in The Cancer Genome Atlas data.
+  
+  We also replicated the kernel density estimates of Hebensteit \textit{et al} for messenger RNA data, although the
+  magnitude of our results differed greatly. We are unsure whether this phenomenon is relevant to the cancer phenotype or if it is an artifact of experimental protocol. Considering the reservations of
+  many scientists with regards to RNA-Seq interpretation we are not confident we could answer this question without obtaining raw data from The Cancer Genome Atlas.
+  
+  
+
+
+\begin{thebibliography}{99}
+
+\bibitem{Hebenstreit}
+  Daniel Hebenstreit , Miaoqing Fang , Muxin Gu, Varodom Charoensawan, Alexander van Oudenaarden
+and Sarah A Teichmann.
+  \emph{RNA sequencing reveals two major classes of gene expression levels in metazoan cells}.
+  Molecular Systems Biology 7 (497), 1-8. 2011.
+
+\bibitem{Mortazavi2008}
+  Ali Mortazavi, Brian A. Williams, Kenneth McCue, Lorian Shaeffer, and Barbera Wold.
+  \emph{Mapping and quantifying mammalian transcriptomes by RNA-Seq}.
+  Nature Method 5 (7), 621-628. 2008.
+  
+\bibitem{wagner2012}
+  Gunter P. Wagner, Koryu Kin, and Vincent J. Lynch.
+  \emph{Measurement of mRNA abundance using RNA-seq data: RPKM is inconsistent among samples.}
+  Theory of Bioscience 131, 281-285. 2012.
+
+  
+\bibitem{Gaur2007}
+  Arti Gaur, David A. Jewell, Yu Liang, Dana Ridzon, Jason H. Moore, Caifu Chen, Victor R. Ambros, and Mark A. Israel.
+  \emph{Characterization of MicroRNA Expression Levels and Their Biological Correlates in Human Cancer Cell Lines}
+  Cancer Research 67 (6), 2456-2468. 2007.
+  
+\bibitem{Jamieson2011}
+  Nigel B. Jamieson, Douglas C. Morran, Jennifer P. Morton, Asif Ali, Euan J. Dickson, C. Ross Carter, owen J. Sansom,
+  T.R. Jeffry Evans, Colin J McKay and Karin A Oien.
+  \emph{MicroRNA Molecular Profiles Associated With Diagnosis, ClinicoPathologic Criteria, and Overall Survival in Patients
+  with Resectable Pancreatic Ductal Carcinoma}.
+  Clinical Cancer Research 18 (2), 534-545. 2011.
+  
+\bibitem{Garzon2006}
+  Ramiro Garzon, Muller Fabbri, Amelia Cimmino, George A. Calin and Carlo M. Croce.
+  \emph{MicroRNA expression and function in cancer}.
+  Trends in Molecular Medicine 12 (12), 580-587. 2006
+\end{thebibliography}
+
+\end{document}
