@@ -5,6 +5,7 @@
 \usepackage{float}
 \usepackage{setspace}
 \usepackage{amsmath}
+\usepackage{cite}
 %opening
 %\title{Human microRNAs Exhibit Two Distributions Within and Across Cancer Samples}
 %\author{Eric T Dawson}
@@ -48,7 +49,7 @@ Dr.~Claus O. Wilke
 
 
 \section*{Abstract}
-It has been previously established that mRNAs exhibit a distinct pattern of two overlapping distributions in expression (Hebenstreit \textit{et al} 2011).
+It has been previously established that mRNAs exhibit a distinct pattern of two overlapping distributions in expression \cite{Hebenstreit2011}.
 We set out to explore whether the same pattern held in microRNAs.
 We used RNA-Seq data from The Cancer Genome Atlas to examine the overall profile of microRNA expression data and fit kernel density estimates.
 Our results indicate that microRNA expression does fit into two
@@ -56,84 +57,85 @@ distributions, but that the characteristics of these distributions are quite dif
 to distinguish tumors within and across cancer types. These trends are consistent across the entirety of the TCGA datasets in our analysis.
 
 \section*{Background}
-MicroRNAs are a family small non-coding RNA molecules. First discovered in \emph{C. elegans} 
-, they are conserved across nearly all metazoan species ().
+MicroRNAs are a family small non-coding RNA molecules. First discovered in \emph{C. elegans},
+they are conserved across nearly all metazoan species \cite{Ambros2004}.
 Mature microRNAs are 20-22bp in size and bind to messenger RNAs through partial 
 Watson-Crick base pairing in the 3' untranslated region. While canonically thought of as post-transcriptional 
 repressors of messenger RNA activity, in recent years several studies have found 
-that microRNAs occasionally act as translational activators().
+that microRNAs occasionally act as translational activators \cite{Hammond2006, Gartel2008}.
 
 In humans, the number of microRNAs and predicted targets has expanded greatly since their discovery.
- The total number of verified microRNAs in humans  stretches well into the 
- hundreds (), with predictions for many more (). As a single microRNA can target 
- many messenger RNAs, the total number of microRNA targets is significantly 
- larger than the number of microRNAs.   Lim \emph{et al} showed that misregulation of 
+The total number of verified microRNAs in humans  stretches well into the 
+hundreds \cite{Barbarotto2008}, with predictions for many more \cite{Friedlander2014}. As a single microRNA can target 
+many messenger RNAs, the total number of microRNA targets is significantly 
+larger than the number of microRNAs.   Lim \emph{et al} showed that misregulation of 
 a single microRNA may affect the expression of over one hundred mRNA 
-transcripts(). In aggregate, the number of messenger RNAs targeted by 
- microRNAs in humans may constitute more than a third of all known protein coding genes
- (Wang \emph{et al} 2011).
+transcripts \cite{Lim2005}. In aggregate, the number of messenger RNAs targeted by 
+microRNAs in humans may constitute more than a third of all known protein coding genes
+ \cite{Wang2011}.
  
  
-With so many targets, microRNAs are essential regulators of many cellular processes ().  
+With so many targets, microRNAs are essential regulators of many cellular processes \cite{Ambros2004}.  
 As microRNAs must be processed by the enzyme Dicer to become active, Dicer 
 mutants have a phenotype analogous to complete knockout of microRNA regulation. 
 Dicer mutants of many species do not survive or reproduce, indicating that microRNAs are essential both
-during and after development (). The irregular expression of microRNAs has been 
-associated with a variety of diseases. 
+during and after development \cite{Bushati2007, Sayed2011}. The irregular expression of microRNAs has been 
+associated with a variety of diseases from liver disease to schizophrenia \cite{Wang2012, Beveridge2012}.
+In addition, microRNA dysregulation has been associated with nearly all common 
+cancer types \cite{Calin2006, Sayed2011}
 %TODO cite some disease.
 
 
 MicroRNAs are of particular interest to cancer researchers because of their 
 complex roles in regulating cell processes. Several individual microRNAs have been 
-associated with specific cancer types (). %TODO cite examples like pancreatic
-Certain cancer types also show specific microRNA signatures (). %TODO
-A pan-cancer superfamily have microRNAs has been discussed %TODO
+associated with specific cancer types \cite{Calin2006, Eun2007, Yan2014}.
+Certain cancer types also show specific microRNA signatures, notably pancreatic
+and triple-negative breast cancer \cite{Eun2007, Sayed2011}.
+A pan-cancer superfamily of microRNAs has been discussed and seems to define
+tumors across many different cancer subtypes \cite{Hamilton2013}. Such 
+signatures can help cluster similar patients and act as biomarkers that may 
+indicate clinical outcome.
 
 
 % Clustering, Cell type specificity
-One major current goal of cancer research is to provide better patient subtyping based on 
-high-throughput techniques rather than solely clinical pathology. It has been 
-estimated that up to twenty percent of tumors are given an incorrect cancer type 
-diagnosis (). This confounds patient treatment as many cancer treatments are 
-specific to the cell type of the original neoplasm. A major frontier in cancer 
-research at the moment is the use of high-throughput techniques to determine a 
-patient's cancer type based on molecular markers rather than pathology (). The 
-hope is that this technique will better determine which drugs are appropriate 
-for treatment.
 
-
-Several models for molecular patient subtyping have been introduced. Each in 
-turn uses its own subset of pan-cancer ``omics'' data to make inferences about 
+A major frontier in cancer research at the moment is the use of high-throughput
+techniques to stratify patients within cancer types to provide treatment more 
+tailored to the individual's pathology. In addition, these algorithms aim
+to prevent misdiagnosis of a metastasis as the primary tumor; while this is a rare mistake
+it has a profoundly negative effect on patient outcome. Several models for molecular patient stratification
+have been introduced. In the past these models used expression data from
+microarrays. Modern examples use their own subsets of pan-cancer ``omics'' data to make inferences about 
 the molecular pathology of a tumor. Many also employ new or different clustering 
 algorithms to achieve better performance. The two predominant algorithms, 
-Network-Based Stratification (NBS) (Hofree \emph{et al} 2014) and PARADIGM (Vaske \emph{et al} 2010) 
+Network-Based Stratification (NBS) \cite{Hofree2013} and PARADIGM \cite{Vaske2010}
 both use protein-protein interaction networks to classify tumors based on 
-impacted cellular pathways. NBS uses a patient's predicted set of coding 
-mutations from one of the many mutation callers while PARADIGM uses DNA, RNA, 
+impacted cellular pathways. NBS uses a patient's predicted set of somatic
+mutations while PARADIGM uses DNA, RNA, 
 and protein data abstracted as a factor graph of the central dogma. Both of 
-these approaches fail to take into the account microRNAs. As microRNAs may have 
+these approaches fail to accommodate microRNAs. As microRNAs may have 
 significant effects on protein expression due to post-transcriptional regulation 
 we believe an opportunity exists to improve these models significantly.
 
 
 Conflicting theories about the role of microRNAs in cancer abound. Many papers 
 support a tumor suppressor role for microRNAs that makes sense given their role 
-as transcriptional repressors (). Others support the idea that microRNAs may act 
-as oncogenes (). Examples of microRNAs that act as tumor suppressors in one case 
-and oncogenes in another have also been discovered ().
+as transcriptional repressors \cite{Bushati2007}. Others support the idea that microRNAs may act 
+as oncogenes \cite{Gartel2008, Hammond2006}. Examples of microRNAs that act as tumor suppressors in one case 
+and oncogenes in another have also been discovered \cite{Saraiya2013, Zhang2007}.
 One explanation for these opposed roles is that genomic 
 duplications of microRNAs act oncogenically while deletions tend to act as tumor 
-suppressors (). As microRNAs are often close to genomic breakpoints, there is 
-some biological support for a mechanism allowing such complexities ().
+suppressors \cite{Zhang2007}. As microRNAs are often close to genomic breakpoints, there is 
+some biological support for a mechanism allowing such complexities \cite{Huppi2008}.
 
 Hierarchical clustering of tumor samples using microRNA expression tends to recover the cell type of origin (). This 
 result reflects the fact that microRNA expression signatures are highly specific 
-to cell type (). For microRNAs associated with development,
+to cell type \cite{Gaur2007}. For microRNAs associated with development,
 misexpression assays indicate that upregulation of even a 
 single cell-type specific microRNA is sufficient to cause gene expression in HeLa cells to 
 more closely resemble the cell type that microRNA helps determine (). However, 
 tumors tend to differ in their overall microRNA expression from normal cells of the same tissue 
-type (). In general, tumors tend to show globally lower microRNA expression than 
+type \cite{Gaur2007}. In general, tumors tend to show globally lower microRNA expression than 
 normal cells from the same tissue (). However, the overall distribution of 
 microRNAs across many samples has not been explored in detail. To examine the 
 characteristics of the overall expression distribution we employed the 
@@ -147,7 +149,7 @@ and conclusions as well as relevant background information.
  
  According to Hebenstreit \emph{et al}, evidence for distinct abundance classes in mRNA transcripts existed as far back 
  as 1976 but had been generally disregarded (Hastie and Bishop, 1976). As recently as 2009 the literature 
- had supported a single distribution of mRNA expression in metazoan cells (Hoyle et al, 2002; Lu and King, 2009; Ramskold et al, 2009). 
+ had supported a single distribution of mRNA expression in metazoan cells \cite{Lu2009, Ramskold2009}. 
  Hebenstreit \emph{et al} noticed two peaks of expression in microarray datasets 
  and subsequently sought to ascertain whether or not multiple distributions were 
  present using RNASeq data from murine Th2 cells. They first fit kernel density estimates to the data 
@@ -178,21 +180,23 @@ and conclusions as well as relevant background information.
 we decided to investigate whether there was similar support for two 
 distributions in microRNA data as in mRNA data. As microRNASeq and mRNASeq are 
 very similar technologies we believe the experimental findings of Hebenstreit \emph{et al} 
-should hold for datasets in our analysis. We sought to accomplish several aims in 
-this study:
+should hold for datasets in our analysis. We sought to characterize the overall 
+distribution of microRNA expression in tumor samples from June 2014 release of
+The Cancer Genome Atlas and examine whether this knowledge might prove useful in 
+stratifying patients across cancer types.
 
-\begin{enumerate}
-  \item To characterize the overall distribution of microRNA expression in TCGA 
-  microRNA-Seq datasets.
-  \item To determine whether microRNA expression fits into multiple 
-  distributions like mRNA expression
-  \item To examine trends in these distributions that might relate to normal or aberrant microRNA 
-  regulation in cancer.
-  \item To see if our findings held solely in one cancer type or across many 
-  types.
-  \item To determine if multiple distributions can be used to better distinguish 
-  patients within and across cancer types.
-\end{enumerate}
+%\begin{enumerate}
+  %\item To characterize the overall distribution of microRNA expression in TCGA 
+  %microRNA-Seq datasets.
+  %\item To determine whether microRNA expression fits into multiple 
+  %distributions like mRNA expression
+  %\item To examine trends in these distributions that might relate to normal or aberrant microRNA 
+  %regulation in cancer.
+  %\item To see if our findings held solely in one cancer type or across many 
+  %types.
+  %\item To determine if multiple distributions can be used to better distinguish 
+ % patients within and across cancer types.
+%\end{enumerate}
 
 
 
@@ -353,13 +357,13 @@ holds across cancer types from the TCGA data (see Figure \ref{fig::all_tri_plots
   is below 4-5 $log_{2} \text{RPKM}$ are approximately equivalent approaches. Furthermore, we believe examination of $log_{2} \text{RPKM}$ data is more informative than raw RPKM levels in the context
   of this study. RPKM is useful for looking at relative expression levels within a sample (). RPKM is also thought to be a decent indicator of RNA abundance, with 1-3 RPKM corresponding to one transcript
   per cell (Mortazavi \textit{et al} 2008), although this notion is hotly contended (see Wagner, Kin, and Lynch 2012). Nonetheless, several studies corroborate that an RPKM value of zero
-  means no transcripts for the given RNA are present in the sample (Hebenstreit \textit{et al} 2011,Mortazavi \textit{et al} 2008, and others). Therefore, microRNAs that are detected in some samples but not
+  means no transcripts for the given RNA are present in the sample (\cite{Hebenstreit2011} ,Mortazavi \textit{et al} 2008, and others). Therefore, microRNAs that are detected in some samples but not
   in others should actually have different transcript counts per cell for the microRNA. We also propose that the microRNAs that are always present in every sample may also represent a core group of essential
   microRNAs and that deletion of one of these is fatal to a cell lineage. As discussed later, this is only one of several possible explanations for this observation, and the experimental work necessary
   to verify this result is outside the scope of this study. %TODO
   
   
-  Hebenstreit \textit{et al} used PCR amplification to determine the detection limit of their mRNASeq setup and found that
+  Hebenstreit \emph{et al} used PCR amplification to determine the detection limit of their mRNASeq setup and found that
   genes with values as low as -5 $log_{2} \text{RPKM}$ could still be detected. These genes mapped to their LE (low-expression) peak. Given this knowledge, we feel comfortable assuming that any microRNA expression that was detected
   was not from experimental noise. As we did not have access to biological samples we could not verify this experimentally.
   
@@ -372,7 +376,7 @@ holds across cancer types from the TCGA data (see Figure \ref{fig::all_tri_plots
 
 
 \subsection*{KDE Fitting Exposes Substantial Variation in microRNA Expression Distributions}
-We next sought to find out how mRNA expression distributions in TCGA data compared to the distributions observed by Hebensteit \textit{et al} in murine Th2 cells. We first fit kernel density estimates (KDEs) to 
+We next sought to find out how mRNA expression distributions in TCGA data compared to the distributions observed by \cite{Hebenstreit2011} in murine Th2 cells. We first fit kernel density estimates (KDEs) to 
 mRNA data to see if the patterns described in the Hebenstreit study were present in cancer data. We generated an overall KDE for the combined mRNA dataset to show
 that the overall expression distribution was very similar to that observed in the Hebenstreit study.
 
@@ -716,7 +720,7 @@ tumors by their overall microRNA expression, the expression of their LE genes, a
 
 This analysis clearly showed that HE microRNA expression provided the cleanest clustering result. LE genes showed very little separation among samples; this may have been because each
 cancer type had too many in common or expression within each cancer type may have been too divergent to distinguish cancer of one type from another. It is known that clustering of cancer
-samples by a variety of methods tends to recover the cell type of the tissue of origin (Gaur \textit{et all} 2007). This information is often of negligible use in the clinic.
+samples by a variety of methods tends to recover the cell type of the tissue of origin \cite{Gaur2007}. This information is often of negligible use in the clinic.
 
 %TODO Finish describing this. Try to analyze why HE gives better separation. Try to get even better separation.s
 
@@ -727,10 +731,10 @@ samples by a variety of methods tends to recover the cell type of the tissue of 
 
 \section*{Discussion}
   This analysis demonstrated that microRNA expression in data from The Cancer Genome Atlas can be characterized by two non-normal distributions. These distributions have similar characteristics but
-  different frequencies compared to those described by Hebensteit \textit{et al} in their 2011 study of murine Th2 cells. They also have differing abilities to separate tumors by hierarchical clustering.
+  different frequencies compared to those described by \cite{Hebenstreit2011} in their 2011 study of murine Th2 cells. They also have differing abilities to separate tumors by hierarchical clustering.
   These distributions are conserved across tumor varieties in The Cancer Genome Atlas data.
   
-  We also replicated the kernel density estimates of Hebensteit \textit{et al} for messenger RNA data, although the
+  We also replicated the kernel density estimates of \cite{Hebenstreit2011} for messenger RNA data, although the
   magnitude of our results differed greatly. We are unsure whether this phenomenon is relevant to the cancer phenotype or if it is an artifact of experimental protocol. Considering the reservations of
   many scientists with regards to RNA-Seq interpretation we are not confident we could answer this question without obtaining raw data from The Cancer Genome Atlas.
   
@@ -738,44 +742,10 @@ samples by a variety of methods tends to recover the cell type of the tissue of 
   Missing genes are a subset of LE genes
 
 
-\begin{thebibliography}{99}
+Calin/Croce and fold differences in regulation
 
-\bibitem{Hebenstreit}
-  Daniel Hebenstreit , Miaoqing Fang , Muxin Gu, Varodom Charoensawan, Alexander van Oudenaarden
-and Sarah A Teichmann.
-  \emph{RNA sequencing reveals two major classes of gene expression levels in metazoan cells}.
-  Molecular Systems Biology 7 (497), 1-8. 2011.
-
-\bibitem{Mortazavi2008}
-  Ali Mortazavi, Brian A. Williams, Kenneth McCue, Lorian Shaeffer, and Barbera Wold.
-  \emph{Mapping and quantifying mammalian transcriptomes by RNA-Seq}.
-  Nature Method 5 (7), 621-628. 2008.
-  
-\bibitem{wagner2012}
-  Gunter P. Wagner, Koryu Kin, and Vincent J. Lynch.
-  \emph{Measurement of mRNA abundance using RNA-seq data: RPKM is inconsistent among samples.}
-  Theory of Bioscience 131, 281-285. 2012.
-
-  
-\bibitem{Gaur2007}
-  Arti Gaur, David A. Jewell, Yu Liang, Dana Ridzon, Jason H. Moore, Caifu Chen, Victor R. Ambros, and Mark A. Israel.
-  \emph{Characterization of MicroRNA Expression Levels and Their Biological Correlates in Human Cancer Cell Lines}
-  Cancer Research 67 (6), 2456-2468. 2007.
-  
-\bibitem{Jamieson2011}
-  Nigel B. Jamieson, Douglas C. Morran, Jennifer P. Morton, Asif Ali, Euan J. Dickson, C. Ross Carter, owen J. Sansom,
-  T.R. Jeffry Evans, Colin J McKay and Karin A Oien.
-  \emph{MicroRNA Molecular Profiles Associated With Diagnosis, ClinicoPathologic Criteria, and Overall Survival in Patients
-  with Resectable Pancreatic Ductal Carcinoma}.
-  Clinical Cancer Research 18 (2), 534-545. 2011.
-  
-\bibitem{Garzon2006}
-  Ramiro Garzon, Muller Fabbri, Amelia Cimmino, George A. Calin and Carlo M. Croce.
-  \emph{MicroRNA expression and function in cancer}.
-  Trends in Molecular Medicine 12 (12), 580-587. 2006
-  
-  \bibitem
-\end{thebibliography}
+\bibliography{thesis_biblio}
+\bibliographystyle{plain}
 
 
 \end{document}
